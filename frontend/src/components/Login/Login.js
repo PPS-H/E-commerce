@@ -1,12 +1,36 @@
+import axios from "axios";
 import React, { useState } from "react";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+import { server } from "../../server";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
   const [passwordVisibility, setpasswordVisibility] = useState(false);
   const [credentials, setCredentials] = useState({ email: "", password: "" });
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setCredentials({ ...credentials, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const data = {
+      email: credentials.email,
+      password: credentials.password,
+    };
+    axios
+      .post(`${server}/user/login`, data, { withCredentials: true })
+      .then((res) => {
+        console.log(res.data.message);
+        toast.success(res.data.message);
+        navigate("/");
+      })
+      .catch((err) => {
+        console.log(err.response.data.message);
+        toast.error(err.response.data.message);
+      });
   };
   return (
     <div className="bg-zinc-100 h-screen">
@@ -16,7 +40,11 @@ function Login() {
             Login to your account
           </h2>
           <div className="bg-white p-8 rounded shadow w-full">
-            <form action="" className="flex flex-col justify-center space-y-6">
+            <form
+              action=""
+              className="flex flex-col justify-center space-y-6"
+              onSubmit={handleSubmit}
+            >
               <div>
                 <label htmlFor="email" className="block text-sm">
                   Email Adderess
@@ -66,7 +94,9 @@ function Login() {
                     id="remeberMe"
                     className="border border-gray-500 rounded mr-1"
                   />
-                  <label htmlFor="rememberMe" className="text-sm">Remember Me</label>
+                  <label htmlFor="rememberMe" className="text-sm">
+                    Remember Me
+                  </label>
                 </div>
                 <div>
                   <a href="" className="text-blue-500 text-sm">

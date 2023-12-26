@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { RxAvatar } from "react-icons/rx";
+import axios from "axios";
+import { server } from "../../server";
+import { toast } from "react-toastify";
 
 function Signup() {
   const [passwordVisibility, setpasswordVisibility] = useState(false);
@@ -11,15 +14,33 @@ function Signup() {
     password: "",
   });
   const handleFileInputChange = (e) => {
-    const reader = new FileReader();
+    setAvatar(e.target.files[0]);
+  };
 
-    console.log("enter");
-    reader.onload = () => {
-      if (reader.readyState === 2) {
-        setAvatar(reader.result);
-      }
-    };
-    reader.readAsDataURL(e.target.files[0]);
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const config = { headers: { "Content-Type": "multipart/form-data" } };
+    const formData = new FormData();
+    formData.append("file", avatar);
+    formData.append("fullname", credentials.fullname);
+    formData.append("email", credentials.email);
+    formData.append("password", credentials.password);
+
+    axios
+      .post(`${server}/user/create-user`, formData, config)
+      .then((response) => {
+        console.log(response.data.message);
+        toast.success(response.data.message);
+        setCredentials({
+          fullname: "",
+          email: "",
+          password: "",
+        });
+        setAvatar("");
+      })
+      .catch((error) => {
+        // console.log(error.response.data.message);
+      });
   };
 
   const handleChange = (e) => {
@@ -33,7 +54,11 @@ function Signup() {
             Register as a new user
           </h2>
           <div className="bg-white p-8 rounded shadow w-full">
-            <form action="" className="flex flex-col justify-center space-y-6">
+            <form
+              action=""
+              className="flex flex-col justify-center space-y-6"
+              onSubmit={handleSubmit}
+            >
               <div>
                 <label htmlFor="fullName" className="block text-sm">
                   Full name
@@ -93,8 +118,8 @@ function Signup() {
                   {avatar ? (
                     <img
                       className="h-8 w-8 object-cover rounded-full"
-                      src={avatar}
-                      alt="Current profile photo"
+                      src={URL.createObjectURL(avatar)}
+                      alt="avatar"
                     />
                   ) : (
                     <RxAvatar className="h-8 w-8 object-cover rounded-full" />
